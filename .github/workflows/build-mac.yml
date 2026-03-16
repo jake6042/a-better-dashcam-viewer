@@ -23,7 +23,9 @@ jobs:
         run: npm ci
 
       - name: Build macOS installers
-        run: npm run build:mac
+        run: npm run build:mac -- --publish always
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Upload macOS artifacts
         uses: actions/upload-artifact@v4
