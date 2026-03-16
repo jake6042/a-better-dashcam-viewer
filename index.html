@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Content-Security-Policy" content="
+        default-src 'self';
+        script-src 'self' 'unsafe-inline' 'unsafe-eval' https://unpkg.com;
+        style-src 'self' 'unsafe-inline' https://fonts.googleapis.com;
+        font-src 'self' https://fonts.gstatic.com;
+        img-src 'self' data: blob:;
+        media-src 'self' blob:;
+    ">
+    <title>A Better Dashcam Viewer</title>
+    <link rel="stylesheet" href="css/styles.css">
+    <script src="https://unpkg.com/lucide@latest"></script>
+</head>
+<body>
+    <div class="header">
+        <div class="logo">A Better Dashcam Viewer</div>
+        <div id="webCodecsStatus" style="font-size: 11px; padding: 4px 10px; border-radius: 6px; font-weight: 500;"></div>
+    </div>
+
+    <div class="main-content">
+        <div class="left-column">
+            <div class="video-wrapper">
+                <video id="videoPlayer"></video>
+                
+                <div class="custom-controls" id="customControls">
+                    <input type="range" class="seek-bar" id="seekBar" min="0" max="100" value="0" step="0.1">
+                    <div class="controls-row">
+                        <button class="play-pause-btn" id="playPauseBtn">
+                            <i data-lucide="play" id="playIcon"></i>
+                            <i data-lucide="pause" id="pauseIcon" style="display: none;"></i>
+                        </button>
+                        <div class="time-display">
+                            <span id="currentTime">0:00</span>
+                            <span class="time-separator">/</span>
+                            <span id="duration">0:00</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="drop-zone" id="dropZone">
+                    <i data-lucide="cloud-upload" class="drop-zone-icon"></i>
+                    <div class="drop-zone-text">Drop Tesla Dashcam Video</div>
+                    <div class="drop-zone-subtext">or click to browse (MP4 only)</div>
+                    <input type="file" id="fileInput" accept=".mp4,video/mp4">
+                </div>
+
+                <div class="loading hidden" id="loading">
+                    <div class="spinner"></div>
+                    <div class="loading-text" id="loadingText">Loading video...</div>
+                    <div class="loading-detail" id="loadingDetail"></div>
+                </div>
+
+                <div class="overlay" id="overlay">
+                    <div class="overlay-top-bar">
+                        <div class="info-capsule-wrapper">
+                            <div class="turn-signal left-signal" id="blinkerLeft">
+                                <i data-lucide="chevron-left"></i>
+                            </div>
+
+                            <div class="info-capsule" id="infoCapsule">
+                                <div class="gear-display" id="gearDisplay">
+                                    <span class="gear" data-gear="0">P</span>
+                                    <span class="gear" data-gear="2">R</span>
+                                    <span class="gear" data-gear="3">N</span>
+                                    <span class="gear active" data-gear="1">D</span>
+                                </div>
+
+                                <div class="speed-display-capsule" id="speedDisplay">
+                                    <div class="speed-value" id="speedValue">0</div>
+                                    <div class="speed-unit" id="speedUnit">mph</div>
+                                </div>
+
+                                <div class="autopilot-status" id="autopilotStatus">
+                                    <span id="autopilotText">--</span>
+                                </div>
+                            </div>
+
+                            <div class="turn-signal right-signal" id="blinkerRight">
+                                <i data-lucide="chevron-right"></i>
+                            </div>
+                        </div>
+
+                        <div class="gps-display" id="gpsDisplay">
+                            <div class="gps-label">GPS</div>
+                            <div class="gps-coords" id="locationText">--</div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+
+            <div class="controls">
+                <div class="frame-info" id="frameInfo">No video loaded</div>
+                <button class="load-new-video-button" id="loadNewVideoButton" disabled>
+                    <i data-lucide="upload"></i>
+                    <span>Load New Video</span>
+                </button>
+            </div>
+        </div>
+
+        <div class="right-column">
+            <div class="overlay-toggles" id="overlayToggles">
+                <div class="section-title">Overlay Elements</div>
+                <label class="toggle-item">
+                    <input type="checkbox" id="toggleGear" checked>
+                    <span>Gear Display (P R N D)</span>
+                </label>
+                <label class="toggle-item">
+                    <input type="checkbox" id="toggleSpeed" checked>
+                    <span>Speed Display</span>
+                </label>
+                <label class="toggle-item">
+                    <input type="checkbox" id="toggleAutopilot" checked>
+                    <span>Autopilot Status</span>
+                </label>
+                <label class="toggle-item">
+                    <input type="checkbox" id="toggleBlinkers" checked>
+                    <span>Turn Signal Indicators</span>
+                </label>
+                <label class="toggle-item">
+                    <input type="checkbox" id="toggleLocation" checked>
+                    <span>GPS Coordinates</span>
+                </label>
+                
+                <div class="section-title" style="margin-top: 16px;">Speed Unit</div>
+                <label class="toggle-item">
+                    <input type="radio" name="speedUnit" id="speedUnitMPH" value="mph" checked>
+                    <span>Miles per Hour (mph)</span>
+                </label>
+                <label class="toggle-item">
+                    <input type="radio" name="speedUnit" id="speedUnitKPH" value="kph">
+                    <span>Kilometers per Hour (km/h)</span>
+                </label>
+            </div>
+
+            <div class="info-panel">
+                <div class="attribution">
+                    <div class="attribution-title">About This Program</div>
+                    <p class="attribution-text">
+                        This desktop application exports Tesla dashcam footage with real-time overlay of vehicle telemetry data (speed, autopilot status, GPS coordinates, blinkers, etc.) embedded in the video stream.
+                    </p>
+                    <p class="attribution-text">
+                        To use this tool, your dashcam footage must be from a HW3+ vehicle running Tesla Software version 2025.44.25 or higher.
+                    </p>
+                    <p class="attribution-text privacy-note">
+                        <strong>Privacy:</strong> Everything runs entirely on your computer. No data is uploaded to any server. Your videos and metadata never leave your device.
+                    </p>
+                    <p class="attribution-text">
+                        Built using Tesla's open-source utilities from 
+                        <a href="#" class="external-link" data-url="https://github.com/teslamotors/dashcam">github.com/teslamotors/dashcam</a>
+                    </p>
+                    <p class="attribution-disclaimer">
+                        Not affiliated with Tesla, Inc. Donations support development of this desktop application only.
+                    </p>
+                </div>
+
+                <a href="#" class="coffee-button external-link" data-url="https://buymeacoffee.com/jake6042">
+                    <i data-lucide="coffee"></i>
+                    Buy Me a Coffee
+                </a>
+                
+                <a href="#" class="github-button external-link" data-url="https://github.com/jake6042">
+                    <i data-lucide="github"></i>
+                    <span>View Source Code on GitHub</span>
+                </a>
+            </div>
+
+            <div class="export-panel">
+                <div class="section-title">Export Options</div>
+                <button class="export-button" id="exportCSVButton" disabled>
+                    <i data-lucide="file-text"></i>
+                    <div class="button-content">
+                        <span class="button-label">Export CSV</span>
+                        <span class="button-description">Metadata only</span>
+                    </div>
+                </button>
+                <button class="export-button" id="exportVideoFastButton" disabled>
+                    <i data-lucide="zap"></i>
+                    <div class="button-content">
+                        <span class="button-label">Fast Export</span>
+                        <span class="button-description">Video with Selected Overlay Data</span>
+                    </div>
+                </button>
+                <button class="export-button primary" id="exportVideoQualityButton" disabled title="Coming soon - UI improvements in progress" style="opacity: 0.5; cursor: not-allowed;">
+                    <i data-lucide="sparkles"></i>
+                    <div class="button-content">
+                        <span class="button-label">Quality Export</span>
+                        <span class="button-description">Coming soon</span>
+                    </div>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <div class="export-modal" id="exportModal">
+        <div class="export-modal-content">
+            <div class="export-modal-title" id="modalTitle">Exporting Video with Overlay</div>
+            <div class="progress-container">
+                <div class="progress-bar-wrapper">
+                    <div class="progress-bar" id="progressBar"></div>
+                </div>
+                <div class="progress-text" id="progressText">Initializing encoder...</div>
+                <div class="progress-detail" id="progressDetail"></div>
+            </div>
+            <div class="export-modal-actions" id="modalActions">
+                <button class="modal-button secondary" id="cancelButton">Cancel</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="status-message" id="statusMessage">
+        <i data-lucide="check" class="status-icon"></i>
+        <span class="status-text" id="statusText"></span>
+    </div>
+
+    <script src="js/protobuf.min.js"></script>
+    <script src="js/dashcam-mp4.js"></script>
+    <script type="module" src="js/app.js"></script>
+
+    <script>
+        if (typeof lucide !== 'undefined') {
+            lucide.createIcons();
+        }
+        
+        const observer = new MutationObserver(() => {
+            if (typeof lucide !== 'undefined') {
+                lucide.createIcons();
+            }
+        });
+        
+        document.addEventListener('DOMContentLoaded', () => {
+            const exportPanel = document.querySelector('.export-panel');
+            if (exportPanel) {
+                observer.observe(exportPanel, { childList: true, subtree: true });
+            }
+        });
+
+        document.addEventListener('DOMContentLoaded', () => {
+            if (typeof window.electronAPI !== 'undefined') {
+                document.querySelectorAll('.external-link, a[href^="http"]').forEach(link => {
+                    link.addEventListener('click', (e) => {
+                        e.preventDefault();
+                        const url = link.getAttribute('data-url') || link.getAttribute('href');
+                        if (url && url !== '#' && url.startsWith('http')) {
+                            window.electronAPI.openExternal(url);
+                        }
+                    });
+                });
+            }
+        });
+    </script>
+</body>
+</html>
