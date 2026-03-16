@@ -105,6 +105,7 @@ Instead of rendering every frame (which would be slow), the app:
 ```
 a-better-dashcam-viewer/
 ├── main.js                 # Electron main process
+├── preload.js             # Context bridge (IPC bridge to renderer)
 ├── index.html             # Main UI
 ├── css/
 │   └── styles.css         # Application styles
